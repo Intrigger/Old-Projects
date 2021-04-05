@@ -32,7 +32,7 @@ void binaryToDec(unsigned char &value, unsigned char* temp){
 }
 
 
-int main(){
+int main(int argc, char* argv[]){
 
 	setlocale(LC_ALL, "Russian");
 
@@ -40,11 +40,21 @@ int main(){
 
 	cout << "Simple encoding program by Intrigger\n";
 
-	cout << "Enter filename: ";
+    FILE* inp;
 
-	cin >> filename;
+    if (argc != 3){
+        cout << "Enter filename: ";
+        cin >> filename;
+        inp = fopen(filename.c_str(), "rb");
+    }
 
-	FILE* inp = fopen(filename.c_str(), "rb");
+    else{
+        for (int i = 0; i < argc; i++){
+            cout << "argv[" << i << "] = " << argv[i] << endl;
+        }
+        inp = fopen(argv[1], "rb");
+    }
+
 
 	vector<unsigned char> s;
 
@@ -72,7 +82,8 @@ int main(){
 
 	fclose(inp);
 
-	inp = fopen(filename.c_str(), "wb");
+	if (argc == 3) inp = fopen(argv[2], "wb");
+    else inp = fopen(filename.c_str(), "wb");
 
 	for (int i = 0; i < s.size(); i++){
 		unsigned char value = 0;
