@@ -4,6 +4,9 @@
 #include <SFML/Audio.hpp>
 #include <iostream>
 #include <vector>
+#include <fstream>
+#include <Windows.h>
+#include <conio.h>
 
 
 namespace MyGraph {
@@ -106,18 +109,18 @@ namespace MyGraph {
 	list* solve(const int H, const int W, int** fieldStr, const int startX, const int startY, const int destX, const int destY) {
 
 
-		printf("StartX: %d\tStartY: %d\nDestX: %d\tDestY: %d\n", startX, startY, destX, destY);
+		//printf("StartX: %d\tStartY: %d\nDestX: %d\tDestY: %d\n", startX, startY, destX, destY);
 
 		auto* arr = new Vertex[H * W];
 
 		for (int j = 0; j < H; j++) {
 			for (int i = 0; i < W; i++) {
-				printf("%d", fieldStr[j][i]);
+				//printf("%d", fieldStr[j][i]);
 				if (fieldStr[j][i] != 1) {
 					arr[j * W + i] = { i, j, 0, INT32_MAX, nullptr };
 				}
 			}
-			printf("\n");
+			//printf("\n");
 		}
 
 		list* l = nullptr;
@@ -200,7 +203,7 @@ namespace MyGraph {
 				i = -1;
 				listLength = getListLength(l);
 				current = l;
-				PrintList(l);
+				//PrintList(l);
 			}
 		}
 
@@ -236,32 +239,25 @@ namespace MyGraph {
 				current = l;
 			}
 		}
-
-
-		for (int j = 0; j < H; j++) {
-			for (int i = 0; i < W; i++) {
-				printf("%d\t", arr[j * W + i].length);
-			}
-			printf("\n");
-		}
-
 		Vertex* cur = &arr[destY * W + destX];
 		list* path = nullptr;
 		AppendVertex(path, cur);
+
+		bool vertexFound = false;
+
 		while (cur->length != 0) {
+			vertexFound = false;
 			while (cur->l != nullptr) {
 				if (cur->l->v->length == cur->length - 1) {
 					AppendVertex(path, cur->l->v);
 					cur = cur->l->v;
+					vertexFound = true;
 					break;
 				}
 				cur->l = cur->l->next;
 			}
+			if (!vertexFound) return nullptr;
 		}
-
-		printf("Path: \n");
-		PrintList(path);
-
 		return ReverseList(path);
 	}
 
@@ -317,7 +313,7 @@ private:
 	int CellSizePx = 16;
 
 	int** field = nullptr;
-
+	vector<std::pair<int**, sf::Vector2i>> fields;
 	bool mapCreated = false;
 
 
@@ -335,7 +331,12 @@ private:
 	sf::Texture black_square16t;
 	sf::Texture viewMapsButtonT;
 	sf::Texture backToMenuButtonT;
-
+	sf::Texture white_square_16t;
+	sf::Texture game_rightpartT;
+	sf::Texture chooseMapButtonT;
+	sf::Texture saveMapButtonT;
+	sf::Texture loadFromFileButtonT;
+		
 	//Sprites
 	sf::Sprite square_16s;
 	sf::Sprite menu_background_s;
@@ -350,10 +351,15 @@ private:
 	sf::Sprite black_square16s;
 	sf::Sprite viewMapsButtonS;
 	sf::Sprite backToMenuButtonS;
+	sf::Sprite game_rightpartS;
+	sf::Sprite loadFromFileButtonS;
 
 	//Sounds
 	sf::SoundBuffer start_sound_buffer;
 	sf::Sound start_sound;
+
+	//Fonts
+	sf::Font font;
 
 
 public:
@@ -405,6 +411,20 @@ public:
 		backToMenuButtonT.loadFromFile("Data/Textures/back_to_menu.png");
 		backToMenuButtonS.setTexture(backToMenuButtonT);
 
+		white_square_16t.loadFromFile("Data/Textures/white_square_16t.png");
+
+		game_rightpartT.loadFromFile("Data/Textures/game_rightpart.png");
+		game_rightpartS.setTexture(game_rightpartT);
+
+		chooseMapButtonT.loadFromFile("Data/Textures/chooseMapButton.png");
+
+		saveMapButtonT.loadFromFile("Data/Textures/saveButton.png");
+
+		loadFromFileButtonT.loadFromFile("Data/Textures/load_from_file.png");
+		loadFromFileButtonS.setTexture(loadFromFileButtonT);
+
+		font.loadFromFile("Data/font.ttf");
+
 	}
 
 	void GameOperator() {
@@ -427,15 +447,20 @@ public:
 
 	void StartGame(sf::RenderWindow &window) {
 
+		cout << "Game started!\n";
+
 		sf::Vector2i redPos;
 		sf::Vector2i greenPos;
 
-		int screenWidthPx = 2 + CellSizePx * FieldWidthElements + FieldWidthElements - 1;/*Additional right menu width*/;
+		int screenWidthPx = 2 + CellSizePx * FieldWidthElements + FieldWidthElements - 1 + (300);/*Additional right menu width*/;
 		int screenHeightPx = 2 + CellSizePx * FieldHeightElements + FieldHeightElements - 1;
+
+		game_rightpartS.setPosition(screenWidthPx - 300, 0);
 
 		window.setView(sf::View(sf::FloatRect(0, 0, screenWidthPx, screenHeightPx)));
 
 		window.setSize(sf::Vector2u(screenWidthPx, screenHeightPx));
+
 
 		for (int j = 0; j < FieldHeightElements; j++) {
 			for (int i = 0; i < FieldWidthElements; i++) {
@@ -472,10 +497,10 @@ public:
 					blocks[j][i] = square_16s;
 				}
 				else if (fieldCopy[j][i] == RED) {
-					blocks[j][i] = red_square16s;
+					blocks[j][i].setTexture(square_16t);
 				}
 				else if (fieldCopy[j][i] == GREEN) {
-					blocks[j][i] = green_square16s;
+					blocks[j][i].setTexture(square_16t);
 				}
 				else if (fieldCopy[j][i] == BLACK) {
 					blocks[j][i] = black_square16s;
@@ -486,6 +511,15 @@ public:
 
 		MyGraph::list* cur = MyGraph::solve(FieldHeightElements, FieldWidthElements, fieldCopy, redPos.x, redPos.y, greenPos.x, greenPos.y);
 
+		if (cur == nullptr) {
+			printf("This labirint cant be solved!Sorry!\n"); return;
+		}
+
+		int pathLength = MyGraph::getListLength(cur) - 1;
+		int currentVertex = 0;
+
+		sf::FloatRect backToMenuButton(screenWidthPx - 300 + 12, 7, 300, 75);
+		sf::FloatRect saveToPngButton(screenWidthPx - 300 + 12, 91, 300, 75);
 
 		while (window.isOpen()) {
 			sf::Event event;
@@ -497,9 +531,18 @@ public:
 
 			window.clear(sf::Color(115, 79, 0));
 
+			window.draw(game_rightpartS);
+
+			
 			if (cur != nullptr) {
-				blocks[cur->v->y][cur->v->x].setTexture(green_square16t);
+
+				blocks[cur->v->y][cur->v->x].setTexture(white_square_16t);
+				//printf("%f %f %f\t", (float(pathLength) - float(currentVertex)) / float(pathLength) * 255, float(currentVertex) / float(pathLength) * 255, 0);
+				blocks[cur->v->y][cur->v->x].setColor(sf::Color((float(pathLength) - float(currentVertex)) / float(pathLength) * 255.0, float(currentVertex) / float(pathLength) * 255.0, 0));
+				//printf("%d %d %d coords: %d, %d\n", blocks[cur->v->y][cur->v->x].getColor().r, blocks[cur->v->y][cur->v->x].getColor().g, blocks[cur->v->y][cur->v->x].getColor().b, cur->v->x, cur->v->y);
 				cur = cur->next;
+				currentVertex += 1;
+
 				sf::sleep(sf::seconds(0.1));
 			}
 
@@ -508,6 +551,32 @@ public:
 					window.draw(blocks[j][i]);
 				}
 			}
+
+			if (event.type == sf::Event::MouseButtonPressed) {
+				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+					if (backToMenuButton.contains(sf::Mouse::getPosition().x - window.getPosition().x, sf::Mouse::getPosition().y - window.getPosition().y)) {
+						return;
+					}
+				}
+				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+					if (saveToPngButton.contains(sf::Mouse::getPosition().x - window.getPosition().x, sf::Mouse::getPosition().y - window.getPosition().y)) {
+						sf::Image img = window.capture();
+						sf::Image newImg;
+						newImg.create(screenWidthPx - 300, screenHeightPx);
+						for (int j = 0; j < newImg.getSize().y; j++) {
+							for (int i = 0; i < newImg.getSize().x; i++) {
+								newImg.setPixel(i, j, img.getPixel(i, j));
+							}
+						}
+
+						newImg.saveToFile("yourImage.png");
+
+						return;
+					}
+				}
+			}
+
+
 
 			window.display();
 		}
@@ -531,10 +600,6 @@ public:
 
 		widthText.setPosition(414 + 135, 349);
 		heightText.setPosition(414 + 135, 349 + 150);
-
-		sf::Font font;
-		font.loadFromFile("Data/font.ttf");
-
 
 		widthText.setFont(font);
 		widthText.setFillColor(sf::Color::Black);
@@ -671,26 +736,22 @@ public:
 				
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
 					curColor = "red";
-					printf("Now your color is red!\n");
 				}
 			}
 			if (greenColor.contains(currentX, currentY)) {
 				
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
 					curColor = "green";
-					printf("Now your color is green!\n");
 				}
 			}
 			if (blackColor.contains(currentX, currentY)) {
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
 					curColor = "black";
-					printf("Now your color is black!\n");
 				}
 			}
 			if (defaultColor.contains(currentX, currentY)) {
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
 					curColor = "default";
-					printf("Now your color is default!\n");
 				}
 			}
 
@@ -715,13 +776,30 @@ public:
 					if (greenUsed && redUsed) {
 						mapCreated = true;
 						sf::Image img = window.capture();
-						
+						sf::Image newImg;
+						newImg.create(img.getSize().x - 300, img.getSize().y);
+						for (int j = 0; j < newImg.getSize().y; j++) {
+							for (int i = 0; i < newImg.getSize().x; i++) {
+								newImg.setPixel(i, j, img.getPixel(i, j));
+							}
+						}
+
+						img = newImg;
+
+
 						std::pair<sf::Texture, sf::Sprite> p;
 						p.first.loadFromImage(img);
 						p.second.setTexture(p.first);
 						p.second.setTextureRect(sf::IntRect(0, 0, screenWidthPx - 300, screenHeightPx));
 
 						maps.push_back(p);
+
+						fields.push_back({ field, sf::Vector2i(FieldWidthElements, FieldHeightElements) });
+						for (int j = 0; j < FieldHeightElements; j++) {
+							for (int i = 0; i < FieldWidthElements; i++) {
+								fields[fields.size() - 1].first[j][i] = field[j][i];
+							}
+						}
 
 						return;
 					}
@@ -808,6 +886,27 @@ public:
 		sf::FloatRect backToMenuButton = sf::FloatRect(400 - 150, 50, 300, 75);
 		backToMenuButtonS.setPosition(backToMenuButton.left, backToMenuButton.top);
 
+		vector<std::pair<sf::FloatRect, sf::Sprite>> chooseMapButtons(maps.size());
+		vector<std::pair<sf::FloatRect, sf::Sprite>> saveMapToFileButtons(maps.size());
+
+		for (int i = 0; i < maps.size(); i++) {
+			chooseMapButtons[i].first.left = maps[i].second.getPosition().x + maps[i].first.getSize().x + 50;
+			chooseMapButtons[i].first.top = maps[i].second.getPosition().y + maps[i].first.getSize().y / 2.0;
+			chooseMapButtons[i].first.width = 64;
+			chooseMapButtons[i].first.height = 64;
+			chooseMapButtons[i].second.setTexture(chooseMapButtonT);
+			chooseMapButtons[i].second.setPosition(chooseMapButtons[i].first.left, chooseMapButtons[i].first.top);
+
+			saveMapToFileButtons[i].first.left = maps[i].second.getPosition().x + maps[i].first.getSize().x + 50;
+			saveMapToFileButtons[i].first.top = maps[i].second.getPosition().y + maps[i].first.getSize().y / 2.0 - (64 + 32);
+			saveMapToFileButtons[i].first.width = 64;
+			saveMapToFileButtons[i].first.height = 64;
+			saveMapToFileButtons[i].second.setTexture(saveMapButtonT);
+			saveMapToFileButtons[i].second.setPosition(saveMapToFileButtons[i].first.left, saveMapToFileButtons[i].first.top);
+
+		}
+
+
 		while (window.isOpen()) {
 			sf::Event event;
 			while (window.pollEvent(event)) {
@@ -819,7 +918,35 @@ public:
 			if (event.type == sf::Event::MouseButtonPressed) {
 				mouseStart = sf::Mouse::getPosition();
 				wasPressed = true;
+				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+					for (int i = 0; i < maps.size(); i++) {
+						if (chooseMapButtons[i].first.contains(sf::Mouse::getPosition().x, sf::Mouse::getPosition().y)) {
+							field = fields[i].first;
+							FieldWidthElements = fields[i].second.x;
+							FieldHeightElements = fields[i].second.y;
+							break;
+						}
+						if (saveMapToFileButtons[i].first.contains(sf::Mouse::getPosition().x, sf::Mouse::getPosition().y)) {
+							field = fields[i].first;
+							FieldWidthElements = fields[i].second.x;
+							FieldHeightElements = fields[i].second.y;
+							std::ofstream fout;
+							fout.open("savedMap.map");
+							fout << FieldWidthElements << " " << FieldHeightElements << std::endl;
+							for (int y = 0; y < FieldHeightElements; y++) {
+								for (int x = 0; x < FieldWidthElements; x++) {
+									fout << field[y][x];
+								}
+								fout << "\n";
+							}
+							fout.close();
+							break;
+						}
+					}
+				}
 			}
+
+
 			if (event.type == sf::Event::MouseButtonReleased) {
 				wasPressed = false;
 				for (int i = 0; i < origins.size(); i++) {
@@ -830,6 +957,14 @@ public:
 			if (wasPressed) {
 				for (int i = 0; i < maps.size(); i++) {
 					maps[i].second.setPosition(origins[i] + sf::Vector2f(sf::Mouse::getPosition() - mouseStart));
+
+					chooseMapButtons[i].first.left = maps[i].second.getPosition().x + maps[i].first.getSize().x + 50;
+					chooseMapButtons[i].first.top = maps[i].second.getPosition().y + maps[i].first.getSize().y / 2.0;
+					chooseMapButtons[i].second.setPosition(chooseMapButtons[i].first.left, chooseMapButtons[i].first.top);
+
+					saveMapToFileButtons[i].first.left = maps[i].second.getPosition().x + maps[i].first.getSize().x + 50;
+					saveMapToFileButtons[i].first.top = maps[i].second.getPosition().y + maps[i].first.getSize().y / 2.0 - (64 + 32);
+					saveMapToFileButtons[i].second.setPosition(saveMapToFileButtons[i].first.left, saveMapToFileButtons[i].first.top);
 				}
 			}
 
@@ -852,6 +987,12 @@ public:
 				window.draw(maps[i].second);
 			}
 
+			for (int i = 0; i < maps.size(); i++) {
+				window.draw(chooseMapButtons[i].second);
+				window.draw(saveMapToFileButtons[i].second);
+			}
+
+
 			window.draw(backToMenuButtonS);
 
 			window.display();
@@ -868,14 +1009,16 @@ public:
 		int newMouseX, newMouseY;
 
 		sf::IntRect startGameButton = sf::IntRect(400 - 150, 100, 300, 75);
-		sf::IntRect exitButton = sf::IntRect(400 - 150, 600, 300, 75);
-		sf::IntRect createMap = sf::IntRect(400 - 150, 100 + startGameButton.height + 50, 300, 75);
-		sf::IntRect viewMaps = sf::IntRect(400 - 150, 100 + createMap.top + createMap.height, 300, 75);
+		sf::IntRect createMap = sf::IntRect(400 - 150, startGameButton.top + startGameButton.height + 50, 300, 75);
+		sf::IntRect viewMaps = sf::IntRect(400 - 150, 50 + createMap.top + createMap.height, 300, 75);
+		sf::IntRect loadMap = sf::IntRect(400 - 150, 50 + viewMaps.top + viewMaps.height, 300, 75);
+		sf::IntRect exitButton = sf::IntRect(400 - 150, 50 + loadMap.top + loadMap.height, 300, 75);
 		//
 		menu_startGameButtonS.setPosition(startGameButton.left, startGameButton.top);
 		menu_exit_game_s.setPosition(exitButton.left, exitButton.top);
 		menu_create_map_s.setPosition(createMap.left, createMap.top);
 		viewMapsButtonS.setPosition(viewMaps.left, viewMaps.top);
+		loadFromFileButtonS.setPosition(loadMap.left, loadMap.top);
 
 		sf::Vector2u windowSize = window.getSize();
 		sf::Vector2i mousePos;
@@ -892,45 +1035,145 @@ public:
 					window.close();
 				}
 			}
+
+
 			window.clear();
 			window.draw(menu_background_s);
 			window.draw(menu_startGameButtonS);
 			window.draw(menu_exit_game_s);
 			window.draw(menu_create_map_s);
 			window.draw(viewMapsButtonS);
+			window.draw(loadFromFileButtonS);
 			window.display();
 
-
-			if (startGameButton.contains(mouse.getPosition().x  - window.getPosition().x, mouse.getPosition().y - window.getPosition().y)) {
-				if (mouse.isButtonPressed(sf::Mouse::Left)) {
-					if (mapCreated) {
-						StartGame(window);
+			if (event.type == sf::Event::MouseButtonPressed){
+				if (startGameButton.contains(mouse.getPosition().x - window.getPosition().x, mouse.getPosition().y - window.getPosition().y)) {
+					if (mouse.isButtonPressed(sf::Mouse::Left)) {
+						if (mapCreated) {
+							StartGame(window);
+							window.setView(sf::View(sf::FloatRect(0, 0, windowSize.x, windowSize.y)));
+							window.setSize(windowSize);
+						}
+					}
+				}
+			}
+			
+			if (event.type == sf::Event::MouseButtonPressed) {
+				if (viewMaps.contains(mouse.getPosition().x - window.getPosition().x, mouse.getPosition().y - window.getPosition().y)) {
+					if (mouse.isButtonPressed(sf::Mouse::Left)) {
+						ViewMaps(window);
 					}
 				}
 			}
 
-			if (viewMaps.contains(mouse.getPosition().x - window.getPosition().x, mouse.getPosition().y - window.getPosition().y)) {
-				if (mouse.isButtonPressed(sf::Mouse::Left)) {
-					ViewMaps(window);
+			
+
+			if (event.type == sf::Event::MouseButtonPressed) {
+				if (createMap.contains(mouse.getPosition().x - window.getPosition().x, mouse.getPosition().y - window.getPosition().y)) {
+					if (mouse.isButtonPressed(sf::Mouse::Left)) {
+						ChooseSize(window);
+						window.setView(sf::View(sf::FloatRect(0, 0, windowSize.x, windowSize.y)));
+						window.setSize(windowSize);
+					}
+
 				}
 			}
-
-
-			if (createMap.contains(mouse.getPosition().x - window.getPosition().x, mouse.getPosition().y  - window.getPosition().y)) {
-				if (mouse.isButtonPressed(sf::Mouse::Left)) {
-					ChooseSize(window);
-					window.setView(sf::View(sf::FloatRect(0, 0, windowSize.x, windowSize.y)));
-					window.setSize(windowSize);
-				}
-				
-			}
-
-			if (exitButton.contains(mouse.getPosition().x - window.getPosition().x, mouse.getPosition().y - window.getPosition().y)) {
-				if (mouse.isButtonPressed(sf::Mouse::Left)) {
-					printf("%d %d\n", mouse.getPosition().x, mouse.getPosition().y);
-					return;
+			
+			if (event.type == sf::Event::MouseButtonPressed) {
+				if (exitButton.contains(mouse.getPosition().x - window.getPosition().x, mouse.getPosition().y - window.getPosition().y)) {
+					if (mouse.isButtonPressed(sf::Mouse::Left)) {
+						std::cout << "Exiting!\n";
+						return;
+					}
 				}
 			}
+			if (event.type == sf::Event::MouseButtonPressed) {
+				if (loadMap.contains(mouse.getPosition().x - window.getPosition().x, mouse.getPosition().y - window.getPosition().y)) {
+					if (mouse.isButtonPressed(sf::Mouse::Left)) {
+						cout << "Enter filename: ";
+						string fileName;
+						cin >> fileName;
+						ifstream fin;
+						fin.open(fileName);
+						if (!fin.is_open()) {
+							cout << "Sorry, something went wrong!\n";
+							continue;
+						}
+						else {
+							cout << "File opened successfully!\n";
+							char character;
+							fin >> FieldWidthElements >> FieldHeightElements;
+							field = new int* [FieldHeightElements];
+							for (int j = 0; j < FieldHeightElements; j++) {
+								field[j] = new int[FieldWidthElements];
+								for (int i = 0; i < FieldWidthElements; i++) {
+									fin >> character;
+									field[j][i] = character - '0';
+									cout << field[j][i];
+								}
+								cout << endl;
+							}
+							mapCreated = true;
+
+							//
+							/////////////////////////////////
+							//
+
+							int screenWidthPx = 2 + CellSizePx * FieldWidthElements + FieldWidthElements - 1;/*Additional right menu width*/;
+							int screenHeightPx = 2 + CellSizePx * FieldHeightElements + FieldHeightElements - 1;
+
+							sf::RenderWindow tempWindow(sf::VideoMode(screenWidthPx, screenHeightPx), "");
+							tempWindow.clear();
+							sf::Sprite** blocks = new sf::Sprite * [FieldHeightElements];
+
+							for (int i = 0; i < FieldHeightElements; i++) {
+								blocks[i] = new sf::Sprite[FieldWidthElements];
+							}
+							for (int j = 0; j < FieldHeightElements; j++) {
+								for (int i = 0; i < FieldWidthElements; i++) {
+									if (field[j][i] == DEFAULT) {
+										blocks[j][i].setTexture(square_16t);
+									}
+									else if (field[j][i] == RED) {
+										blocks[j][i].setTexture(red_square16t);
+									}
+									else if (field[j][i] == GREEN) {
+										blocks[j][i].setTexture(green_square16t);
+									}
+									else if (field[j][i] == BLACK) {
+										blocks[j][i].setTexture(black_square16t);
+									}
+									blocks[j][i].setPosition(1 + i * (16 + 1), 1 + j * (16 + 1));
+									tempWindow.draw(blocks[j][i]);
+								}
+							}
+							sf::Image img = tempWindow.capture();
+							img.saveToFile("tempimg.png");
+
+							tempWindow.display();
+							sf::sleep(sf::milliseconds(100));
+
+
+							std::pair<sf::Texture, sf::Sprite> p;
+							p.first.loadFromImage(img);
+							p.second.setTexture(p.first);
+							maps.push_back(p);
+
+							fields.push_back({ field, sf::Vector2i(FieldWidthElements, FieldHeightElements) });
+							for (int j = 0; j < FieldHeightElements; j++) {
+								for (int i = 0; i < FieldWidthElements; i++) {
+									fields[fields.size() - 1].first[j][i] = field[j][i];
+								}
+							}
+
+
+							fin.close();
+						}
+
+					}
+				}
+			}
+			
 		}
 
 	}
