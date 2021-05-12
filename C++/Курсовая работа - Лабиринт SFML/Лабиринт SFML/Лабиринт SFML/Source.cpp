@@ -1,5 +1,7 @@
 #pragma warning(disable : 4996)
 
+//Подключение всех нужных библиотек
+
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <iostream>
@@ -8,7 +10,7 @@
 #include <Windows.h>
 #include <conio.h>
 
-
+//Пространтсво имен для решения задачи на графах
 namespace MyGraph {
 
 	using namespace std;
@@ -28,6 +30,7 @@ namespace MyGraph {
 		list* next;
 	};
 
+	//Добавление вершины графа в список вершин графа
 	void AppendVertex(list*& l, Vertex* v) {
 		if (l == nullptr) {
 			l = new list;
@@ -45,7 +48,7 @@ namespace MyGraph {
 			cur->next = nullptr;
 		}
 	}
-
+	//Вывод списка
 	void PrintList(list* l) {
 		int cur = 0;
 		while (l != nullptr) {
@@ -54,7 +57,7 @@ namespace MyGraph {
 			else break;
 		}
 	}
-
+	//Получение длины списка
 	int getListLength(list* l) {
 		int length = 0;
 		if (l == nullptr) return 0;
@@ -67,7 +70,7 @@ namespace MyGraph {
 			return length;
 		}
 	}
-
+	//Удаление первого элемента списка вершин
 	void deleteFirst(list*& l) {
 		if (l == nullptr) return;
 		if (getListLength(l) == 1) l = nullptr;
@@ -77,7 +80,7 @@ namespace MyGraph {
 			l = newL;
 		}
 	}
-
+	//Проверка на наличие вершины в списке
 	bool inList(list* l, Vertex* v) {
 		if (l == nullptr) return false;
 		while (l->next != nullptr) {
@@ -89,14 +92,14 @@ namespace MyGraph {
 		if (l->v == v) return true;
 		return false;
 	}
-
+	//Получение вершины по ее индексу
 	Vertex* getListElement(list* l, int index){
 		while (index--) {
 			if (l->next != nullptr) l = l->next;
 		}
 		return l->v;
 	}
-
+	//Разворачивание списка вершин
 	list* ReverseList(list* l) {
 		list* newList = nullptr;
 		int length = getListLength(l);
@@ -105,35 +108,22 @@ namespace MyGraph {
 		}
 		return newList;
 	}
-
+	//Главная функция. Решает задачу нахождения кратчайшего пути на графе
+	//алгоритмом Дейкстра.
 	list* solve(const int H, const int W, int** fieldStr, const int startX, const int startY, const int destX, const int destY) {
-
-
-		//printf("StartX: %d\tStartY: %d\nDestX: %d\tDestY: %d\n", startX, startY, destX, destY);
-
 		auto* arr = new Vertex[H * W];
-
 		for (int j = 0; j < H; j++) {
 			for (int i = 0; i < W; i++) {
-				//printf("%d", fieldStr[j][i]);
 				if (fieldStr[j][i] != 1) {
 					arr[j * W + i] = { i, j, 0, INT32_MAX, nullptr };
 				}
 			}
-			//printf("\n");
 		}
-
 		list* l = nullptr;
-
-		//Appending the 1-st vertex (starting vertex)
 		arr[W * startY + startX].color = 1;
 		AppendVertex(l, &arr[W * startY + startX]);
-
-
 		int listLength = getListLength(l);
-
 		list* current = l;
-
 		for (int i = 0; i < listLength; i++) {
 			current = l;
 			int curX = current->v->x;
@@ -203,7 +193,6 @@ namespace MyGraph {
 				i = -1;
 				listLength = getListLength(l);
 				current = l;
-				//PrintList(l);
 			}
 		}
 
@@ -258,6 +247,7 @@ namespace MyGraph {
 			}
 			if (!vertexFound) return nullptr;
 		}
+
 		return ReverseList(path);
 	}
 
@@ -265,54 +255,20 @@ namespace MyGraph {
 
 using namespace std;
 
-struct list {
-	int value;
-	list* next;
-};
-
-class Vector {
-private:
-	int length;
-	list *head = nullptr;
-public:
-	Vector() {
-		length = 0;
-	}
-	void Append(int value) {
-		if (length == 0) {
-			head = new list;
-			head->value = value;
-			head->next = nullptr;
-		}
-		else {
-			list* cur = head;
-			while (cur->next != nullptr) {
-				cur = cur->next;
-			}
-			cur->next = new list;
-			cur = cur->next;
-			cur->value = value;
-			cur->next = nullptr;
-		}
-		length++;
-	}
-	int getLength() {
-		return length;
-	}
-};
-
-
+//Основной класс отвечающий за графику и взаимодействие пользователя с приложением
 class Game {
 
 private:
-	
+	//текущие карты в оперативной памяти 
 	vector<std::pair<sf::Texture, sf::Sprite>> maps;
 
+	//Стандрантые параметры игры
 	int WidthPx = 800, HeightPx = 800;
 	int FieldWidthElements = 20, FieldHeightElements = 20;
 	int CellSizePx = 16;
 
 	int** field = nullptr;
+	//То же самое, что и maps, но хранит карты в виде чисел и размера карты
 	vector<std::pair<int**, sf::Vector2i>> fields;
 	bool mapCreated = false;
 
@@ -367,6 +323,7 @@ public:
 	
 
 	enum { DEFAULT, BLACK, RED, GREEN};
+	//Загружаем все нужные данные с диска
 	void loadAllData() {
 		square_16t.loadFromFile("Data/Textures/square_16.png");
 		square_16s.setTexture(square_16t);
@@ -427,6 +384,80 @@ public:
 
 	}
 
+	//Загружаем все карты с диска
+	void LoadMaps() {
+
+		ifstream fin;
+		fin.open("savedMaps.map");
+		while (fin >> FieldWidthElements) {
+			fin >> FieldHeightElements;
+			char character;
+			field = new int* [FieldHeightElements];
+			for (int j = 0; j < FieldHeightElements; j++) {
+				field[j] = new int[FieldWidthElements];
+				for (int i = 0; i < FieldWidthElements; i++) {
+					fin >> character;
+					field[j][i] = character - '0';
+				}
+			}
+			mapCreated = true;
+
+			int screenWidthPx = 2 + CellSizePx * FieldWidthElements + FieldWidthElements - 1;/*Additional right menu width*/;
+			int screenHeightPx = 2 + CellSizePx * FieldHeightElements + FieldHeightElements - 1;
+
+			sf::RenderWindow tempWindow(sf::VideoMode(screenWidthPx, screenHeightPx), "");
+			
+			tempWindow.clear();
+			sf::Sprite** blocks = new sf::Sprite * [FieldHeightElements];
+
+			for (int i = 0; i < FieldHeightElements; i++) {
+				blocks[i] = new sf::Sprite[FieldWidthElements];
+			}
+			for (int j = 0; j < FieldHeightElements; j++) {
+				for (int i = 0; i < FieldWidthElements; i++) {
+					if (field[j][i] == DEFAULT) {
+						blocks[j][i].setTexture(square_16t);
+					}
+					else if (field[j][i] == RED) {
+						blocks[j][i].setTexture(red_square16t);
+					}
+					else if (field[j][i] == GREEN) {
+						blocks[j][i].setTexture(green_square16t);
+					}
+					else if (field[j][i] == BLACK) {
+						blocks[j][i].setTexture(black_square16t);
+					}
+					blocks[j][i].setPosition(1 + i * (16 + 1), 1 + j * (16 + 1));
+					tempWindow.draw(blocks[j][i]);
+				}
+			}
+			sf::Image img = tempWindow.capture();
+			img.saveToFile("tempimg.png");
+
+			tempWindow.display();
+			sf::sleep(sf::milliseconds(100));
+
+
+			std::pair<sf::Texture, sf::Sprite> p;
+			p.first.loadFromImage(img);
+			p.second.setTexture(p.first);
+			maps.push_back(p);
+
+			fields.push_back({ field, sf::Vector2i(FieldWidthElements, FieldHeightElements) });
+			for (int j = 0; j < FieldHeightElements; j++) {
+				for (int i = 0; i < FieldWidthElements; i++) {
+					fields[fields.size() - 1].first[j][i] = field[j][i];
+				}
+			}
+		}
+		
+
+
+		fin.close();
+
+	}
+
+	//Главная функция, запускающая остальные
 	void GameOperator() {
 
 		sf::Music backgroundMusic;
@@ -437,17 +468,18 @@ public:
 
 		loadAllData();
 		
+		backgroundMusic.setVolume(25);
 		backgroundMusic.play();
 		sf::RenderWindow window(sf::VideoMode(WidthPx, HeightPx), "Intrigger Labirint v1.0", sf::Style::None);
 		window.setPosition(sf::Vector2i(0, 0));
 
+		LoadMaps();
+
 		Menu(window);
 
 	}
-
+	//Функция, отвечающая за прохождение лабиринта и отображение на экран прохождения
 	void StartGame(sf::RenderWindow &window) {
-
-		cout << "Game started!\n";
 
 		sf::Vector2i redPos;
 		sf::Vector2i greenPos;
@@ -473,7 +505,6 @@ public:
 					greenPos.y = j;
 				}
 			}
-			printf("\n");
 		}
 
 		int** fieldCopy = new int* [FieldHeightElements];
@@ -537,9 +568,7 @@ public:
 			if (cur != nullptr) {
 
 				blocks[cur->v->y][cur->v->x].setTexture(white_square_16t);
-				//printf("%f %f %f\t", (float(pathLength) - float(currentVertex)) / float(pathLength) * 255, float(currentVertex) / float(pathLength) * 255, 0);
 				blocks[cur->v->y][cur->v->x].setColor(sf::Color((float(pathLength) - float(currentVertex)) / float(pathLength) * 255.0, float(currentVertex) / float(pathLength) * 255.0, 0));
-				//printf("%d %d %d coords: %d, %d\n", blocks[cur->v->y][cur->v->x].getColor().r, blocks[cur->v->y][cur->v->x].getColor().g, blocks[cur->v->y][cur->v->x].getColor().b, cur->v->x, cur->v->y);
 				cur = cur->next;
 				currentVertex += 1;
 
@@ -568,21 +597,16 @@ public:
 								newImg.setPixel(i, j, img.getPixel(i, j));
 							}
 						}
-
 						newImg.saveToFile("yourImage.png");
-
 						return;
 					}
 				}
 			}
-
-
-
 			window.display();
 		}
-
 	}
 
+	//Функция, отвечающая за окно выбора размера будущей карты
 	void ChooseSize(sf::RenderWindow& window) {
 
 		choose_size_background_s.setPosition(0, 0);
@@ -669,6 +693,7 @@ public:
 
 	}
 
+	//Функция, отвечающая за создание карты
 	void MapCreator(sf::RenderWindow& window) {
 
 
@@ -703,9 +728,6 @@ public:
 				field[j][i] = 0;
 			}
 		}
-
-		printf("W: %d\tH:%d", screenWidthPx, screenHeightPx);
-
 		string curColor = "";
 
 		bool redUsed = false;
@@ -800,7 +822,6 @@ public:
 								fields[fields.size() - 1].first[j][i] = field[j][i];
 							}
 						}
-
 						return;
 					}
 				}
@@ -851,13 +872,13 @@ public:
 					}
 				}
 			}
-
 			window.draw(map_creator_rightpart_s);
 			window.display();
 		}
 
 	}
 
+	//Функция, отвечающая за просмотр созданных ранее карт
 	void ViewMaps(sf::RenderWindow& window) {
 
 		sf::Mouse mouse;
@@ -880,6 +901,7 @@ public:
 		vector<sf::Vector2f> origins(maps.size());
 
 		for (int i = 0; i < origins.size(); i++) {
+
 			origins[i] = maps[i].second.getPosition();
 		}
 
@@ -931,7 +953,7 @@ public:
 							FieldWidthElements = fields[i].second.x;
 							FieldHeightElements = fields[i].second.y;
 							std::ofstream fout;
-							fout.open("savedMap.map");
+							fout.open("savedMaps.map", ios::app);
 							fout << FieldWidthElements << " " << FieldHeightElements << std::endl;
 							for (int y = 0; y < FieldHeightElements; y++) {
 								for (int x = 0; x < FieldWidthElements; x++) {
@@ -940,6 +962,7 @@ public:
 								fout << "\n";
 							}
 							fout.close();
+							sf::sleep(sf::milliseconds(500));
 							break;
 						}
 					}
@@ -999,6 +1022,7 @@ public:
 		}
 	}
 
+	//Функция, отвечающая за взаимодействие всех элементов меню между собой
 	void Menu(sf::RenderWindow& window) {
 
 		menu_background_s.setPosition(0, 0);
@@ -1100,7 +1124,6 @@ public:
 							continue;
 						}
 						else {
-							cout << "File opened successfully!\n";
 							char character;
 							fin >> FieldWidthElements >> FieldHeightElements;
 							field = new int* [FieldHeightElements];
@@ -1109,9 +1132,7 @@ public:
 								for (int i = 0; i < FieldWidthElements; i++) {
 									fin >> character;
 									field[j][i] = character - '0';
-									cout << field[j][i];
 								}
-								cout << endl;
 							}
 							mapCreated = true;
 
@@ -1165,8 +1186,6 @@ public:
 									fields[fields.size() - 1].first[j][i] = field[j][i];
 								}
 							}
-
-
 							fin.close();
 						}
 
@@ -1181,8 +1200,9 @@ public:
 
 int main()
 {
+	//Создаем нашу игру
 	Game game;
-
+	//Запускаем ее
 	game.GameOperator();
 
 	return 0;
