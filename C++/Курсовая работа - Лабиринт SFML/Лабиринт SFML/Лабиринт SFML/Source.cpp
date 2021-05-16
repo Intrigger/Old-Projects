@@ -473,6 +473,8 @@ public:
 		sf::RenderWindow window(sf::VideoMode(WidthPx, HeightPx), "Intrigger Labirint v1.0", sf::Style::None);
 		window.setPosition(sf::Vector2i(0, 0));
 
+		window.setFramerateLimit(120);
+
 		LoadMaps();
 
 		Menu(window);
