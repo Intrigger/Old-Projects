@@ -292,7 +292,8 @@ private:
 	sf::Texture chooseMapButtonT;
 	sf::Texture saveMapButtonT;
 	sf::Texture loadFromFileButtonT;
-		
+	sf::Texture cantSolveT;
+
 	//Sprites
 	sf::Sprite square_16s;
 	sf::Sprite menu_background_s;
@@ -309,6 +310,8 @@ private:
 	sf::Sprite backToMenuButtonS;
 	sf::Sprite game_rightpartS;
 	sf::Sprite loadFromFileButtonS;
+	sf::Sprite cantSolveS;
+
 
 	//Sounds
 	sf::SoundBuffer start_sound_buffer;
@@ -380,8 +383,19 @@ public:
 		loadFromFileButtonT.loadFromFile("Data/Textures/load_from_file.png");
 		loadFromFileButtonS.setTexture(loadFromFileButtonT);
 
+		cantSolveT.loadFromFile("Data/Textures/cant_solve.png");
+		cantSolveS.setTexture(cantSolveT);
+
 		font.loadFromFile("Data/font.ttf");
 
+	}
+
+	bool inVector(vector<MyGraph::Vertex*> list, MyGraph::Vertex* value) {
+		int length = list.size();
+		for (int i = 0; i < length; i++) {
+			if (list[i] == value) return true;
+		}
+		return false;
 	}
 
 	//Загружаем все карты с диска
@@ -491,9 +505,7 @@ public:
 
 		game_rightpartS.setPosition(screenWidthPx - 300, 0);
 
-		window.setView(sf::View(sf::FloatRect(0, 0, screenWidthPx, screenHeightPx)));
 
-		window.setSize(sf::Vector2u(screenWidthPx, screenHeightPx));
 
 
 		for (int j = 0; j < FieldHeightElements; j++) {
@@ -545,14 +557,56 @@ public:
 		MyGraph::list* cur = MyGraph::solve(FieldHeightElements, FieldWidthElements, fieldCopy, redPos.x, redPos.y, greenPos.x, greenPos.y);
 
 		if (cur == nullptr) {
-			printf("This labirint cant be solved!Sorry!\n"); return;
+			window.clear();
+			window.draw(cantSolveS);
+			window.display();
+			Sleep(2000);
+			return;
 		}
+
+		window.setView(sf::View(sf::FloatRect(0, 0, screenWidthPx, screenHeightPx)));
+
+		window.setSize(sf::Vector2u(screenWidthPx, screenHeightPx));
 
 		int pathLength = MyGraph::getListLength(cur) - 1;
 		int currentVertex = 0;
 
 		sf::FloatRect backToMenuButton(screenWidthPx - 300 + 12, 7, 300, 75);
 		sf::FloatRect saveToPngButton(screenWidthPx - 300 + 12, 91, 300, 75);
+
+		MyGraph::list* l = nullptr, *current;
+		MyGraph::AppendVertex(l, cur->v);
+
+		int listLength = MyGraph::getListLength(l);
+
+		vector<MyGraph::Vertex*> usedList;
+
+		int maxLength = 0;
+
+		for (int i = 0; i < listLength; i++) {
+			current = l;
+			MyGraph::list* curV = current->v->l;
+
+			maxLength = max(maxLength, current->v->length);
+
+			while (curV != nullptr) {
+				if ((!inList(l, curV->v)) && (!inVector(usedList, curV->v))) {
+					AppendVertex(l, curV->v);
+				}
+				curV = curV->next;
+			}
+
+			(*current->v).color = 0;
+			usedList.push_back(current->v);
+			deleteFirst(l);
+			if (i == listLength - 1) {
+				i = -1;
+				listLength = getListLength(l);
+				current = l;
+			}
+		}
+
+		MyGraph::AppendVertex(l, cur->v);
 
 		while (window.isOpen()) {
 			sf::Event event;
@@ -567,12 +621,31 @@ public:
 			window.draw(game_rightpartS);
 
 			
-			if (cur != nullptr) {
+			if (l != nullptr) {
+				int length = MyGraph::getListLength(l);
+				for (int i = 0; i < length; i++) {
+					current = l;
+					MyGraph::list* curV = current->v->l;
 
-				blocks[cur->v->y][cur->v->x].setTexture(white_square_16t);
-				blocks[cur->v->y][cur->v->x].setColor(sf::Color((float(pathLength) - float(currentVertex)) / float(pathLength) * 255.0, float(currentVertex) / float(pathLength) * 255.0, 0));
-				cur = cur->next;
-				currentVertex += 1;
+					blocks[current->v->y][current->v->x].setTexture(white_square_16t);
+					blocks[current->v->y][current->v->x].setColor(sf::Color((float(maxLength) - float(current->v->length)) / float(maxLength) * 255.0, float(current->v->length) / float(maxLength) * 255.0, 0));
+
+					if (MyGraph::inList(cur, current->v)) {
+						blocks[current->v->y][current->v->x].setTexture(white_square_16t);
+						blocks[current->v->y][current->v->x].setColor(sf::Color(float(current->v->length) / float(maxLength) * 255.0, 0, (float(maxLength) - float(current->v->length)) / float(maxLength) * 255.0));
+					}
+
+					while (curV != nullptr) {
+						if ((!inList(l, curV->v)) and (curV->v->color != 2)) {
+							AppendVertex(l, curV->v);
+						}
+						curV = curV->next;
+					}
+
+					(*current->v).color = 2;
+					deleteFirst(l);
+					curV = l;
+				}
 
 				sf::sleep(sf::seconds(0.1));
 			}
@@ -1108,7 +1181,7 @@ public:
 			if (event.type == sf::Event::MouseButtonPressed) {
 				if (exitButton.contains(mouse.getPosition().x - window.getPosition().x, mouse.getPosition().y - window.getPosition().y)) {
 					if (mouse.isButtonPressed(sf::Mouse::Left)) {
-						std::cout << "Exiting!\n";
+						std::cout << "Выходим!\n";
 						return;
 					}
 				}
@@ -1116,13 +1189,13 @@ public:
 			if (event.type == sf::Event::MouseButtonPressed) {
 				if (loadMap.contains(mouse.getPosition().x - window.getPosition().x, mouse.getPosition().y - window.getPosition().y)) {
 					if (mouse.isButtonPressed(sf::Mouse::Left)) {
-						cout << "Enter filename: ";
+						cout << "Введите название файла: ";
 						string fileName;
 						cin >> fileName;
 						ifstream fin;
 						fin.open(fileName);
 						if (!fin.is_open()) {
-							cout << "Sorry, something went wrong!\n";
+							cout << "Не удалось открыть файл!\n";
 							continue;
 						}
 						else {
@@ -1202,6 +1275,8 @@ public:
 
 int main()
 {
+	setlocale(0, "ru");
+	
 	//Создаем нашу игру
 	Game game;
 	//Запускаем ее
