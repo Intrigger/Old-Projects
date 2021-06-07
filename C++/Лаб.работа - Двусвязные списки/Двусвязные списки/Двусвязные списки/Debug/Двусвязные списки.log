@@ -1,0 +1,53 @@
+﻿  Source.cpp
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\xutility(1622,27): error C2664: "bool (MyDLL::dll *,MyDLL::dll *)": невозможно преобразовать аргумент 2 из "MyDLL::dll" в "MyDLL::dll *"
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\xutility(1622,27): message : Для выполнения данного преобразования нет доступного оператора преобразования, определенного пользователем, или вызов оператора невозможен
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\xutility(1621): message : выполняется компиляция ссылки на экземпляр шаблон функции "bool std::_Debug_lt_pred<bool(__cdecl *&)(MyDLL::dll *,MyDLL::dll *),MyDLL::dll&,MyDLL::dll&,0>(_Pr,_Ty1,_Ty2) noexcept(<expr>)"
+          with
+          [
+              _Pr=bool (__cdecl *&)(MyDLL::dll *,MyDLL::dll *),
+              _Ty1=MyDLL::dll &,
+              _Ty2=MyDLL::dll &
+          ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\algorithm(7485): message : выполняется компиляция ссылки на экземпляр шаблон функции "_BidIt *std::_Insertion_sort_unchecked<_RanIt,bool(__cdecl *)(MyDLL::dll *,MyDLL::dll *)>(const _BidIt,const _BidIt,_Pr)"
+          with
+          [
+              _BidIt=MyDLL::dll *,
+              _RanIt=MyDLL::dll *,
+              _Pr=bool (__cdecl *)(MyDLL::dll *,MyDLL::dll *)
+          ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\algorithm(7515): message : выполняется компиляция ссылки на экземпляр шаблон функции "void std::_Sort_unchecked<_RanIt,bool(__cdecl *)(MyDLL::dll *,MyDLL::dll *)>(_RanIt,_RanIt,int,_Pr)"
+          with
+          [
+              _RanIt=MyDLL::dll *,
+              _Pr=bool (__cdecl *)(MyDLL::dll *,MyDLL::dll *)
+          ]
+C:\Users\Intrigger\Documents\GitHub\Main\C++\Лаб.работа - Двусвязные списки\Двусвязные списки\Двусвязные списки\Source.cpp(149): message : выполняется компиляция ссылки на экземпляр шаблон функции "void std::sort<MyDLL::dll*,bool(__cdecl *)(MyDLL::dll *,MyDLL::dll *)>(const _RanIt,const _RanIt,_Pr)"
+          with
+          [
+              _RanIt=MyDLL::dll *,
+              _Pr=bool (__cdecl *)(MyDLL::dll *,MyDLL::dll *)
+          ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\xutility(1622,20): error C2664: "bool (MyDLL::dll *,MyDLL::dll *)": невозможно преобразовать аргумент 1 из "MyDLL::dll" в "MyDLL::dll *"
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\xutility(1622,20): message : Для выполнения данного преобразования нет доступного оператора преобразования, определенного пользователем, или вызов оператора невозможен
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\algorithm(7419,1): error C2664: "bool (MyDLL::dll *,MyDLL::dll *)": невозможно преобразовать аргумент 2 из "MyDLL::dll" в "MyDLL::dll *"
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\algorithm(7419,32): message : Для выполнения данного преобразования нет доступного оператора преобразования, определенного пользователем, или вызов оператора невозможен
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\algorithm(7496): message : выполняется компиляция ссылки на экземпляр шаблон функции "std::pair<_RanIt,_RanIt> std::_Partition_by_median_guess_unchecked<_RanIt,bool(__cdecl *)(MyDLL::dll *,MyDLL::dll *)>(_RanIt,_RanIt,_Pr)"
+          with
+          [
+              _RanIt=MyDLL::dll *,
+              _Pr=bool (__cdecl *)(MyDLL::dll *,MyDLL::dll *)
+          ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\algorithm(7419,1): error C2664: "bool (MyDLL::dll *,MyDLL::dll *)": невозможно преобразовать аргумент 1 из "MyDLL::dll" в "MyDLL::dll *"
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\algorithm(7419,22): message : Для выполнения данного преобразования нет доступного оператора преобразования, определенного пользователем, или вызов оператора невозможен
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\algorithm(7423,1): error C2664: "bool (MyDLL::dll *,MyDLL::dll *)": невозможно преобразовать аргумент 2 из "MyDLL::dll" в "MyDLL::dll *"
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\algorithm(7423,92): message : Для выполнения данного преобразования нет доступного оператора преобразования, определенного пользователем, или вызов оператора невозможен
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\algorithm(7423,1): error C2664: "bool (MyDLL::dll *,MyDLL::dll *)": невозможно преобразовать аргумент 1 из "MyDLL::dll" в "MyDLL::dll *"
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\algorithm(7423,82): message : Для выполнения данного преобразования нет доступного оператора преобразования, определенного пользователем, или вызов оператора невозможен
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\algorithm(7434,1): error C2664: "bool (MyDLL::dll *,MyDLL::dll *)": невозможно преобразовать аргумент 2 из "MyDLL::dll" в "MyDLL::dll *"
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\algorithm(7434,40): message : Для выполнения данного преобразования нет доступного оператора преобразования, определенного пользователем, или вызов оператора невозможен
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\algorithm(7434,1): error C2664: "bool (MyDLL::dll *,MyDLL::dll *)": невозможно преобразовать аргумент 1 из "MyDLL::dll" в "MyDLL::dll *"
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\algorithm(7434,30): message : Для выполнения данного преобразования нет доступного оператора преобразования, определенного пользователем, или вызов оператора невозможен
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\algorithm(7447,1): error C2664: "bool (MyDLL::dll *,MyDLL::dll *)": невозможно преобразовать аргумент 2 из "MyDLL::dll" в "MyDLL::dll *"
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\algorithm(7447,40): message : Для выполнения данного преобразования нет доступного оператора преобразования, определенного пользователем, или вызов оператора невозможен
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\algorithm(7447,1): error C2664: "bool (MyDLL::dll *,MyDLL::dll *)": невозможно преобразовать аргумент 1 из "MyDLL::dll" в "MyDLL::dll *"
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\algorithm(7447,30): message : Для выполнения данного преобразования нет доступного оператора преобразования, определенного пользователем, или вызов оператора невозможен
