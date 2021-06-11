@@ -50,6 +50,12 @@ namespace MyDLL {
 
 	void deleteFromTo(dll*& head, int from, int to) { //[from; to]
 		int length = getLength(head);
+
+
+		if (from > to) {
+			swap(from, to);
+		}
+
 		if (from < 0) {
 			cerr << "\"From\" index below zero!";
 			return;
@@ -59,9 +65,6 @@ namespace MyDLL {
 			return;
 		}
 
-		if (from > to) {
-			swap(from, to);
-		}
 
 		if (from == 0) {
 
@@ -111,18 +114,24 @@ namespace MyDLL {
 
 	void insertTo(dll*& head, int to, int* values, int size) {
 		int current = 0;
-		
+	
 		dll* leftDLL = head;
 		if ((to > getLength(head)) || (to < 0)) {
 			cerr << "Wrong \"to\" index!\n";
 			return;
 		}
 
+
 		while (current < to - 1) {
 			current++;
 			leftDLL = leftDLL->next;
 		}
-		dll* rightDLL = leftDLL->next;
+		dll* rightDLL = nullptr;
+		if (head != nullptr) leftDLL->next;
+		else {
+			leftDLL = nullptr;
+		}
+
 		if (to == 0) {
 			rightDLL = head;
 			leftDLL = new dll;
