@@ -487,7 +487,7 @@ public:
 		sf::RenderWindow window(sf::VideoMode(WidthPx, HeightPx), "Intrigger Labirint v1.0", sf::Style::None);
 		window.setPosition(sf::Vector2i(0, 0));
 
-		window.setFramerateLimit(120);
+		//window.setFramerateLimit(120);
 
 		LoadMaps();
 
@@ -504,10 +504,6 @@ public:
 		int screenHeightPx = 2 + CellSizePx * FieldHeightElements + FieldHeightElements - 1;
 
 		game_rightpartS.setPosition(screenWidthPx - 300, 0);
-
-
-
-
 		for (int j = 0; j < FieldHeightElements; j++) {
 			for (int i = 0; i < FieldWidthElements; i++) {
 				if (field[j][i] == RED) {
